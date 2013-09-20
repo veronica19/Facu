@@ -1,0 +1,107 @@
+#include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+typedef struct
+{
+   char apellido[30];
+   char nombre [15];
+   long int dni;
+   int edad;
+} t_persona;
+void mostrar(FILE*);
+int registros(FILE*);
+void numero(FILE*,int,int);
+void modificar_registro(FILE*);
+void modificar(FILE*,int,int);
+void main ()
+{
+int num,cant,md;
+FILE*arch;
+if((arch= fopen("Registros.dat", "rb+"))== NULL)
+   {
+    printf("Error al crear el archivo\n");
+    getch();
+    exit(1);
+    }
+mostrar(arch);
+cant=registros(arch);
+printf("\nCantidad de registros:%d\n",cant);
+printf("\nIngrese numero de registro que desea(1 a 10):");
+scanf("%d",&num);
+numero(arch,num,cant);
+do
+ {
+ 	printf("\n ¿Desea modificar un registro? \n si=1 \n No=0 : ");
+   scanf("%d",&md);
+ }while(md!=1 && md!=0);
+ 	if(md==1)
+   	{
+      printf("\nIngrese el numero de registro que desea modificar: \n");
+      scanf("%d",&num);
+      fflush(stdin);
+   	modificar(arch,num,cant);
+      printf("\n Archivo actualizado: \n");
+		mostrar(arch);
+      }
+
+fclose(arch);
+getch();
+}
+///////////////////////////////////////////////////////////////////////
+void mostrar(FILE*p)
+{
+   fseek(p,0,0);
+   t_persona a;
+   fread(&a,sizeof(t_persona),1,p);
+	printf("\n  Apellido       Nombre         D.N.I.          Edad\n\n");
+	for(int i=0;i<10;i++)
+    	{
+      printf("  %-15s%-10s\t%ld\t%d\n\n",a.apellido,a.nombre,a.dni,a.edad);
+      fread(&a,sizeof(t_persona),1,p);
+      }
+}
+////////////////////////////////////////////////////////////////////////
+int registros(FILE*p)
+{
+	//int cant;
+	fseek(p,0,2);
+	//cant=ftell(p)/sizeof(t_persona);
+	return ftell(p)/sizeof(t_persona);
+}
+////////////////////////////////////////
+void numero(FILE*p,int num,int cant)
+{
+	t_persona a;
+	if(num<=cant)
+     		{
+         //fseek(p,0,0);
+      	fseek(p,(num-1)*sizeof(t_persona),0);
+      	fread(&a,sizeof(t_persona),1,p);
+         printf("\n Apellido       Nombre     D.N.I.      Edad\n\n");
+      	printf("%6s%10s%10ld%10d\n",a.apellido,a.nombre,a.dni,a.edad);
+         }
+  else
+    	printf("El archivo no existe.\n");
+}
+//////////////////////////////////////////////////
+
+void modificar(FILE* t, int num, int cant)
+{
+t_persona per;
+	if(num>=1&&num<=cant)
+   	{
+   	fseek(t,(num-1)*sizeof(t_persona),0);
+      printf("\Ingrese un Apellido:");
+      fflush(stdin);
+      gets(per.apellido);
+      printf("\nIngrese un nombre: ");
+      gets(per.nombre);
+      printf("\nIngrese D.N.I: ");
+      scanf("%d",&per.dni);
+      printf("\nIngrese edad:");
+      scanf("%d",&per.edad);
+      fwrite(&per,sizeof(t_persona),1,t);
+   	}
+   else
+        printf("\nNo existe el numero registro ingresado.",num);
+}
