@@ -1,14 +1,4 @@
 
-
-
-
-
-dejo mi version .. previamente tienen que existir 2 archivos, estudiantes y empleados, y tienen que estar ordenados como dice el enunciado,genero un nuevo archivo que se llama empleados actualizado, tambien ordenado, y uso una funcion strcmpi_ "casera" jaj.
-
-
-
-
-
 #include <stdio.h>
 
 #include <conio.h>
