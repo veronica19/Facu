@@ -1,0 +1,148 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define PAL 40
+#define AUMENTO 0.0728
+typedef struct
+{
+
+    long int dni;
+
+    char ape[PAL];
+
+    char nom[PAL];
+
+    long int sueldo;
+
+}empleados;
+typedef struct
+
+{
+    long int dni;
+
+    char ape[PAL];
+
+    char nom[PAL];
+
+    float prom;
+
+}estudiantes;
+int compara_reg (estudiantes,empleados);
+
+void actualizo_emple (empleados, FILE *);
+int main()
+
+{
+
+    FILE * pf_alum;
+
+    FILE * pf_emple;
+
+    estudiantes reg_alum;
+
+    empleados reg_emple;
+    int cmp;  /*En esta variable guardo el valor que devuelve la comparacion */
+    pf_alum = fopen ("estudiantes.dat","rb");
+
+    if (!pf_alum)
+
+        exit(1);
+
+    pf_emple = fopen ("empleados.dat","rb+");
+    if (!pf_emple)
+
+    {
+
+        fclose (pf_alum);    /* No se olviden de cerrar el primer archivo */
+
+        exit(2);
+
+    }
+    fread (&reg_alum, sizeof (estudiantes),1,pf_alum);
+
+    fread (&reg_emple, sizeof (empleados),1,pf_emple);
+    while(!feof (pf_emple)&&!feof (pf_alum))
+
+    {
+
+        if (!(cmp = compara_reg (reg_alum,reg_emple)))
+
+        {
+
+            if (reg_alum.prom > 7)
+
+
+                actualizo_emple (reg_emple, pf_emple);
+
+        }
+            else
+
+        {
+
+            if (cmp < 0)
+
+                fread (&reg_alum, sizeof (estudiantes),1,pf_alum);
+            else
+
+                fread (&reg_emple, sizeof (empleados),1,pf_emple);
+        }
+
+    } /* Cierre del while */
+
+    fclose(pf_alum);
+
+    fclose(pf_emple);
+    return 0;
+
+}
+
+int compara_reg(estudiantes alum,empleados emple)
+
+{
+
+    if (!strcmp(alum.ape, emple.ape))
+
+    {
+
+        if (!strcmp(alum.nom, emple.nom))
+
+
+        {
+
+            if (alum.dni == emple.dni)
+
+                return 0; /* Es la misma persona */
+
+            return alum.dni - emple.dni;
+
+        }
+
+        return strcmp (alum.nom, emple.nom);
+
+    }
+
+    return strcmp (alum.ape, emple.ape);
+
+
+
+
+}
+
+void actualizo_emple(empleados emple, FILE * pf)
+
+{
+
+    fseek(pf,(-1)* sizeof (empleados),1);
+
+
+    fseek(pf,0,1);
+
+    emple.sueldo += emple.sueldo * AUMENTO ;
+
+    fwrite(&emple, sizeof (empleados),1,pf);
+
+
+
+
+}
