@@ -1,0 +1,280 @@
+
+
+
+
+
+dejo mi version .. previamente tienen que existir 2 archivos, estudiantes y empleados, y tienen que estar ordenados como dice el enunciado,genero un nuevo archivo que se llama empleados actualizado, tambien ordenado, y uso una funcion strcmpi_ "casera" jaj.
+
+
+
+
+
+#include <stdio.h>
+
+#include <conio.h>
+
+#include <stdlib.h>
+
+#define TAM 21
+
+typedef struct                                       /*Declaracion Estructuras*/
+
+ {
+
+  int dni;
+
+  char apellido[TAM],nombre[TAM];
+
+  double sueldo;
+
+ }empleado;
+
+typedef struct
+
+ {
+
+  int dni;
+
+  char apellido[TAM],nombre[TAM];
+
+  float promedio;
+
+ }estudiante;
+
+int strcmpi_ (char*,char*);                          /*Funcion para comparar cadenas,sin importar mayusculas y minusculas*/
+
+int ActualizarSueldos(FILE*,estudiante,empleado*);   /*Funcion para actualizar los sueldos,si el estudiante no existe devuelve 0*/
+
+void main(void)
+
+ {
+
+  FILE *pem,*pes,*act;
+
+  estudiante est;
+
+  empleado emp;
+
+  pes=fopen("Estudiantes","rb");
+
+  pem=fopen("Empleados","rb");
+
+  act=fopen("Empleados Actualizado","wb");
+
+  if(!pes)
+
+   {
+
+    printf("\nERROR1");                              /*Diferencio los tipos de errores*/
+
+    getch();
+
+    exit(1);
+
+   }
+
+    if(!pem)
+
+   {
+
+    printf("\nERROR2");
+
+    getch();
+
+    exit(1);
+
+   }
+
+    if(!act)
+
+   {
+
+    printf("\nERROR3");
+
+    getch();
+
+    exit(1);
+
+   }
+
+  fread(&est,sizeof(estudiante),1,pes);               /*leo el archivo estudiantes*/
+
+  while(!feof(pes)&&!feof(pem))
+
+   {
+
+    if(est.promedio>7)                                /*si el promedio es mayor a 7 actualizo el sueldo y lo guardo en Empleados Actualizado*/
+
+     {
+
+      switch(ActualizarSueldos(pem,est,&emp))
+
+       {
+
+        case 1:                                     /*si la funcion devuelve 1 es que se pudo actualizar el sueldo, y lo grabamos en empleados actualizado*/
+
+         fwrite(&emp,sizeof(empleado),1,act);
+
+         break;
+
+        case 0:                                     /*si la funcion devuelve 0 es que no existe el estudiante en el archivo empleados*/
+
+         break;
+
+        case -1:                                    /*si la funcion devuelve -1 es que el estudiante no esta en el archivo y ademas por el orden alfabetico se deduce que si hay mas estudiantes, estos no figuraran en el archivo empleados*/
+
+         printf("\nOPERACION TERMINADA");
+
+         getch();
+
+         exit(1);
+
+       }
+
+     }
+
+    else                                              /*si el promedio es <= a 7 entonces guardo sin aumentar el sueldo*/
+
+     {
+
+      fread(&emp,sizeof(empleado),1,pem);
+
+      fwrite(&emp,sizeof(empleado),1,act);
+
+     }
+
+    fread(&est,sizeof(estudiante),1,pes);
+
+   }
+
+  fclose(pes);
+
+  fclose(pem);
+
+  fclose(act);
+
+  printf("\nOPERACION TERMINADA");
+
+  getch();
+
+ }
+
+/////////////////////////////
+
+int strcmpi_ (char*cad1,char*cad2)
+
+ {
+
+  char c1,c2;                               /*uso 2 variables char para no modificar el vector*/
+
+  if(*cad1>=65&&*cad1<=90)                  /*paso el contenido de los punteros si son mayuscula, a minuscula, para poder luego compararlos*/
+
+   {c1=*cad1+32;}
+
+  else
+
+   {c1=*cad1;}
+
+  if(*cad2>=65&&*cad2<=90)
+
+   {c2=*cad2+32;}
+
+  else
+
+   {c2=*cad2;}
+
+  while(*cad1&&*cad2&&c1==c2)
+
+   {
+
+    ++cad1;
+
+    ++cad2;
+
+    if(*cad1>=65&&*cad1<=90)
+
+     {c1=*cad1+32;}
+
+    else
+
+     {c1=*cad1;}
+
+    if(*cad2>=65&&*cad2<=90)
+
+     {c2=*cad2+32;}
+
+    else
+
+     {c2=*cad2;}
+
+   }
+
+  if(!*cad1&&!*cad2)
+
+   {return(0);}
+
+  return(c1-c2);
+
+ }
+
+
+
+
+/////////////////////////////
+
+int ActualizarSueldos(FILE *pf,estudiante est,empleado *retorno)
+
+ {
+
+  empleado emp;
+
+  fread(&emp,sizeof(empleado),1,pf);
+
+  while(!feof(pf))
+
+   {
+
+    if(strcmpi_(est.apellido,emp.apellido)==0&&strcmpi_(est.nombre,emp.nombre)==0&&est.dni==emp.dni)
+
+     {
+
+      emp.sueldo+=(emp.sueldo*0.0728);           /*aumento el sueldo al 7.28%*/
+
+      *retorno=emp;                              /*modifico el valor emp del main*/
+
+      return(1);                                 /*retorno 1 xq se pudieron hacer las operaciones*/
+
+     }
+
+    else
+
+     {
+
+      if(strcmpi_(est.apellido,emp.apellido)<0||(strcmpi_(est.apellido,emp.apellido)==0&&strcmpi_(est.nombre,emp.nombre)<0)||(strcmpi_(est.apellido,emp.apellido)==0&&strcmpi_(est.nombre,emp.nombre)==0&&est.dni<emp.dni))
+
+       {return(0);}                /*retorno 0 porque el estudiante solicitado no esta en el archivo empleados*/
+
+     }
+
+    fread(&emp,sizeof(empleado),1,pf);
+
+   }
+
+  return(-1);                      /*retorno -1 porque el estudiante solicitado no esta en el archivo y ademas es alfabeticamente mayor a los otros empleados*/
+
+ }
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
